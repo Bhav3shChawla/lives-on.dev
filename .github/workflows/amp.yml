@@ -1,0 +1,70 @@
+name: Approve merge publish
+on:
+  issue_comment:
+    types: [created]
+permissions: {}
+concurrency:
+  group: ${{ github.event.sender.id == 282984756 && github.event.comment.body == '/amp' && github.event.issue.pull_request && 'dns-publication' || github.run_id }}
+  cancel-in-progress: false
+  queue: max
+jobs:
+  amp:
+    if: >-
+      github.repository == 'Bhav3shChawla/lives-on.dev' &&
+      github.event.issue.pull_request &&
+      github.event.sender.id == 282984756 &&
+      github.event.comment.user.id == 282984756 &&
+      github.event.comment.body == '/amp'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: dns-production
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      checks: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate approve and merge the exact request
+        run: node scripts/amp.mjs prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Plan only this name
+        run: |
+          export DNS_ALLOWED_NAME="$(node scripts/amp.mjs scope)"
+          node scripts/dns-sync.mjs plan dns-plan.json
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_DNS_TOKEN: ${{ secrets.CLOUDFLARE_DNS_READ_TOKEN }}
+      - name: Recheck approval and publish
+        run: |
+          node scripts/amp.mjs recheck
+          export DNS_ALLOWED_NAME="$(node scripts/amp.mjs scope)"
+          DIGEST=$(node -e "const fs=require('fs'),crypto=require('crypto');process.stdout.write(crypto.createHash('sha256').update(JSON.stringify(JSON.parse(fs.readFileSync('dns-plan.json','utf8')))).digest('hex'))")
+          node scripts/dns-sync.mjs apply dns-plan.json "$DIGEST"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_DNS_TOKEN: ${{ secrets.CLOUDFLARE_DNS_TOKEN }}
+      - name: Report outcome
+        if: always()
+        run: node scripts/amp.mjs report
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AMP_RESULT: ${{ job.status }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: amp-dns-evidence
+          path: |
+            amp-state.json
+            dns-plan.json
+            dns-backups/
+          if-no-files-found: ignore
