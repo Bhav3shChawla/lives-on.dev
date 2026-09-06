@@ -26,3 +26,5 @@ jobs:
         working-directory: candidate
       - run: node --test scripts/validate-record.test.mjs
         working-directory: trusted
+      - run: if [ -f scripts/amp.test.mjs ]; then node --test scripts/amp.test.mjs; fi
+        working-directory: trusted

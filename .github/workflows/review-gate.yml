@@ -11,7 +11,7 @@ permissions:
   statuses: write
 jobs:
   review:
-    if: github.event_name == 'pull_request_target' || github.event.issue.pull_request
+    if: github.event_name == 'pull_request_target' || (github.event.issue.pull_request && (startsWith(github.event.comment.body, '/approve ') || startsWith(github.event.changes.body.from, '/approve ')))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v7
