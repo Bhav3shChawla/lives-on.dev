@@ -5,7 +5,7 @@ const zone = process.env.CLOUDFLARE_ZONE_ID;
 const token = process.env.CLOUDFLARE_DNS_TOKEN;
 const marker = 'lives-on.dev:registry';
 const digest = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
-const writable = record => ({ type: record.type, name: record.name, ttl: 300, proxied: false, comment: marker,
+const writable = record => ({ type: record.type, name: record.name, ttl: record.ttl ?? 300, proxied: record.proxied ?? false, comment: marker,
   ...(['CAA','SRV','TLSA','DS'].includes(record.type) ? { data: record.data } : { content: record.content }),
   ...(record.type === 'MX' ? { priority: record.priority } : {}) });
 const signature = record => JSON.stringify(writable(record));

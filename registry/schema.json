@@ -4,18 +4,26 @@
   "title": "lives-on.dev domain request",
   "type": "object",
   "additionalProperties": false,
-  "required": ["owner", "records"],
+  "required": [
+    "owner",
+    "records"
+  ],
   "properties": {
     "owner": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["username"],
+      "required": [
+        "username"
+      ],
       "properties": {
         "username": {
           "type": "string",
           "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$"
         },
-        "email": { "type": "string", "format": "email" }
+        "id": {
+          "type": "integer",
+          "minimum": 1
+        }
       }
     },
     "records": {
@@ -23,29 +31,242 @@
       "minProperties": 1,
       "additionalProperties": false,
       "properties": {
-        "A": { "$ref": "#/$defs/stringOrStrings" },
-        "AAAA": { "$ref": "#/$defs/stringOrStrings" },
-        "CNAME": { "type": "string" },
-        "TXT": { "$ref": "#/$defs/stringOrStrings" },
-        "MX": { "type": "array", "minItems": 1 },
-        "CAA": { "type": "array", "minItems": 1 },
-        "NS": { "$ref": "#/$defs/stringOrStrings" },
-        "SRV": { "type": "array", "minItems": 1 },
-        "TLSA": { "type": "array", "minItems": 1 },
-        "DS": { "type": "array", "minItems": 1 },
-        "URL": { "type": "string", "format": "uri" }
-      }
+        "A": {
+          "$ref": "#/$defs/stringOrStrings"
+        },
+        "AAAA": {
+          "$ref": "#/$defs/stringOrStrings"
+        },
+        "CNAME": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253
+        },
+        "TXT": {
+          "$ref": "#/$defs/stringOrStrings"
+        },
+        "MX": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "target",
+              "priority"
+            ],
+            "properties": {
+              "target": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 253
+              },
+              "priority": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              }
+            }
+          }
+        },
+        "CAA": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "flags",
+              "tag",
+              "value"
+            ],
+            "properties": {
+              "flags": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "tag": {
+                "enum": [
+                  "issue",
+                  "issuewild",
+                  "iodef"
+                ]
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            }
+          }
+        },
+        "NS": {
+          "$ref": "#/$defs/stringOrStrings"
+        },
+        "SRV": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "priority",
+              "weight",
+              "port",
+              "target"
+            ],
+            "properties": {
+              "priority": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "weight": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "port": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "target": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 253
+              }
+            }
+          }
+        },
+        "TLSA": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "usage",
+              "selector",
+              "matching_type",
+              "certificate"
+            ],
+            "properties": {
+              "usage": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3
+              },
+              "selector": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "matching_type": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2
+              },
+              "certificate": {
+                "type": "string",
+                "pattern": "^(?:[a-fA-F0-9]{2})+$"
+              }
+            }
+          }
+        },
+        "DS": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "key_tag",
+              "algorithm",
+              "digest_type",
+              "digest"
+            ],
+            "properties": {
+              "key_tag": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "algorithm": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255
+              },
+              "digest_type": {
+                "enum": [
+                  1,
+                  2,
+                  4
+                ]
+              },
+              "digest": {
+                "type": "string",
+                "pattern": "^[a-fA-F0-9]+$"
+              }
+            }
+          }
+        },
+        "URL": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "CNAME"
+            ]
+          },
+          "then": {
+            "maxProperties": 1
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "URL"
+            ]
+          },
+          "then": {
+            "maxProperties": 1
+          }
+        }
+      ]
     },
-    "proxied": { "type": "boolean" },
-    "redirect_config": { "type": "object" }
+    "proxied": {
+      "const": false
+    }
   },
   "$defs": {
     "stringOrStrings": {
       "oneOf": [
-        { "type": "string", "minLength": 1 },
+        {
+          "type": "string",
+          "minLength": 1
+        },
         {
           "type": "array",
-          "items": { "type": "string", "minLength": 1 },
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
           "minItems": 1,
           "uniqueItems": true
         }
