@@ -6,6 +6,7 @@ permissions:
 concurrency:
   group: dns-publication
   cancel-in-progress: false
+  queue: max
 jobs:
   plan:
     if: github.ref == 'refs/heads/main'

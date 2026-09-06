@@ -1,6 +1,8 @@
 import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { validateDefinition } from '../lib/validate-record.mjs';
+import { selectDnsScope } from '../lib/amp-policy.mjs';
+const scope = process.env.DNS_ALLOWED_NAME || null;
 const zone = process.env.CLOUDFLARE_ZONE_ID;
 const token = process.env.CLOUDFLARE_DNS_TOKEN;
 const marker = 'lives-on.dev:registry';
@@ -119,8 +121,9 @@ function planChanges(live, wanted) {
     )
   )
     throw new Error('Only exact registry subdomains are supported.');
-  const unmanaged = live.filter((r) => r.comment !== marker),
-    managed = live.filter((r) => r.comment === marker);
+  const selected = selectDnsScope(live, wanted, scope);
+  const { unmanaged, managed } = selected;
+  wanted = selected.wanted;
   for (const record of wanted)
     if (unmanaged.some((r) => r.name === record.name))
       throw new Error(
@@ -149,10 +152,11 @@ if (mode === 'plan') {
     changes = planChanges(live, await desired());
   const plan = {
     zoneId: zone,
+    scope,
     zone: 'lives-on.dev',
     createdAt: Date.now(),
     fingerprint: fingerprint(live),
-    before: live.filter((r) => r.comment === marker).map(writable),
+    before: selectDnsScope(live, [], scope).managed.map(writable),
     changes,
   };
   await writeFile(
@@ -169,6 +173,7 @@ if (mode === 'plan') {
   );
 } else if (mode === 'apply') {
   const plan = JSON.parse(await readFile(filename, 'utf8'));
+  if ((plan.scope || null) !== scope) throw new Error('DNS plan scope mismatch.');
   if (
     plan.zoneId !== zone ||
     plan.zone !== 'lives-on.dev' ||
@@ -184,34 +189,36 @@ if (mode === 'plan') {
   if (fingerprint(live) !== plan.fingerprint)
     throw new Error('DNS changed after planning; create a fresh diff.');
   const managedIds = new Set(
-    live.filter((r) => r.comment === marker).map((r) => r.id),
+    selectDnsScope(live, [], scope).managed.map((r) => r.id),
   );
   if (
     plan.changes.deletes.some((r) => !managedIds.has(r.id)) ||
     plan.changes.posts.some(
-      (r) => r.comment !== marker || !r.name.endsWith('.lives-on.dev'),
+      (r) => r.comment !== marker || !r.name.endsWith('.lives-on.dev') || r.name.includes('*') || (scope && r.name !== scope),
     )
   )
     throw new Error('Unsafe plan scope.');
   await mkdir('dns-backups', { recursive: true });
   await writeFile(
     'dns-backups/before-' + Date.now() + '.json',
-    JSON.stringify({ zoneId: zone, records: plan.before }, null, 2),
+    JSON.stringify({ zoneId: zone, scope, records: plan.before }, null, 2),
   );
   if (plan.changes.deletes.length || plan.changes.posts.length)
     await api('/dns_records/batch', 'POST', plan.changes);
   console.log('Approved DNS batch applied; backup saved.');
 } else if (mode === 'rollback-plan') {
   const backup = JSON.parse(await readFile(filename, 'utf8'));
+  if ((backup.scope || null) !== scope) throw new Error('Backup scope mismatch.');
   if (backup.zoneId !== zone) throw new Error('Wrong backup zone.');
   const live = await current(),
     changes = planChanges(live, backup.records);
   const plan = {
     zoneId: zone,
+    scope,
     zone: 'lives-on.dev',
     createdAt: Date.now(),
     fingerprint: fingerprint(live),
-    before: live.filter((r) => r.comment === marker).map(writable),
+    before: selectDnsScope(live, [], scope).managed.map(writable),
     changes,
   };
   await writeFile(
