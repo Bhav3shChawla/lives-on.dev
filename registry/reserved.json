@@ -1,8 +1,41 @@
 {
   "version": 1,
   "names": {
-    "reports": { "category": "system", "reason": "reporting contact", "allowDomainFile": false },
-    "_domainkey": { "category": "system", "reason": "mail authentication", "allowDomainFile": false },
+    "mohit": {
+      "category": "private",
+      "reason": "reserved for future assignment",
+      "allowDomainFile": false
+    },
+    "anuj": {
+      "category": "private",
+      "reason": "reserved for future assignment",
+      "allowDomainFile": false
+    },
+    "atharv": {
+      "category": "private",
+      "reason": "reserved for future assignment",
+      "allowDomainFile": false
+    },
+    "agntc": {
+      "category": "private",
+      "reason": "reserved for future assignment",
+      "allowDomainFile": false
+    },
+    "deform": {
+      "category": "private",
+      "reason": "reserved for future assignment",
+      "allowDomainFile": false
+    },
+    "reports": {
+      "category": "system",
+      "reason": "reporting contact",
+      "allowDomainFile": false
+    },
+    "_domainkey": {
+      "category": "system",
+      "reason": "mail authentication",
+      "allowDomainFile": false
+    },
     "admin": {
       "category": "system",
       "reason": "service administration",
