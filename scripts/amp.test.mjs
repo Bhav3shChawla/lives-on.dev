@@ -1,7 +1,18 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { OWNER, assertCommand, assertRequest, selectDnsScope } from '../lib/amp-policy.mjs';
+import { OWNER, assertCommand, assertRequest, selectDnsScope, requestWithRetry } from '../lib/amp-policy.mjs';
 const user = { ...OWNER, type: 'User' };
+test('transient reads retry, writes never retry blindly, and retries are bounded', async () => {
+  let calls = 0;
+  const read = await requestWithRetry('https://api.github.com/test', {}, async () => new Response('', { status: ++calls === 1 ? 500 : 200 }), async () => {});
+  assert.equal(read.status, 200); assert.equal(calls, 2);
+  calls = 0;
+  const write = await requestWithRetry('https://api.github.com/test', { method: 'POST' }, async () => { calls++; return new Response('', { status: 500 }); }, async () => {});
+  assert.equal(write.status, 500); assert.equal(calls, 1);
+  calls = 0;
+  await requestWithRetry('https://api.github.com/test', {}, async () => { calls++; return new Response('', { status: 503 }); }, async () => {});
+  assert.equal(calls, 4);
+});
 function fixture() {
   const comment = { id: 123, user: { ...user }, body: '/amp', created_at: '2026-09-07T00:00:10Z', updated_at: '2026-09-07T00:00:10Z' };
   return {
