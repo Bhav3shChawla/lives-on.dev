@@ -1,6 +1,6 @@
 import { readFile, writeFile, unlink } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
-import { assertCommand, assertRequest } from '../lib/amp-policy.mjs';
+import { assertCommand, assertRequest, requestWithRetry } from '../lib/amp-policy.mjs';
 import { validateDefinition } from '../lib/validate-record.mjs';
 const event = JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH, 'utf8'));
 const repo = 'Bhav3shChawla/lives-on.dev';
@@ -8,10 +8,10 @@ const prefix = '/repos/' + repo;
 const number = event.issue?.number;
 const run = `https://github.com/${repo}/actions/runs/${process.env.GITHUB_RUN_ID}`;
 async function api(path, method = 'GET', body) {
-  const r = await fetch('https://api.github.com' + path, { method,
+  const r = await requestWithRetry('https://api.github.com' + path, { method,
     headers: { Authorization: 'Bearer ' + process.env.GH_TOKEN, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(30000) });
-  if (!r.ok) throw new Error(`GitHub operation failed (${r.status}). See the run for the failed step.`);
+  if (!r.ok) throw new Error(`GitHub ${method} ${path} failed (${r.status}).`);
   return r.status === 204 ? null : r.json();
 }
 async function commentNow() {
@@ -20,7 +20,7 @@ async function commentNow() {
   return c;
 }
 async function fileAt(ref, filename) {
-  const r = await fetch(`https://api.github.com${prefix}/contents/${filename}?ref=${ref}`, {
+  const r = await requestWithRetry(`https://api.github.com${prefix}/contents/${filename}?ref=${ref}`, {
     headers: { Authorization: 'Bearer ' + process.env.GH_TOKEN, Accept: 'application/vnd.github+json' }, signal: AbortSignal.timeout(30000) });
   if (r.status === 404) return null;
   if (!r.ok) throw new Error('Could not verify the published record.');
