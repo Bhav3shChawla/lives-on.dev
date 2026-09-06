@@ -2,7 +2,7 @@
 
 Free subdomains for personal, non-commercial developer projects.
 
-**Public registration is closed** while review and abuse-reporting procedures are completed. Existing approved records remain active.
+**Beta service:** check the [website](https://lives-on.dev) for current registration availability. Every request requires review before publication.
 
 ## Records
 
@@ -11,5 +11,7 @@ Approved public DNS definitions live in `registry/domains/`. DNS destinations an
 ## Review and policy
 
 Changes require validation and maintainer review. A pending request is not proof of active DNS. See [SERVICE_POLICY.md](SERVICE_POLICY.md).
+
+Report abuse, security issues, privacy requests, or name disputes to reports@lives-on.dev. Include the affected address and relevant evidence, never credentials.
 
 [Website](https://lives-on.dev) · [Maintainer](https://github.com/Bhav3shChawla)
