@@ -22,4 +22,4 @@ jobs:
             if (pr.state !== 'open') return;
             const comments = await github.paginate(github.rest.issues.listComments,{...context.repo,issue_number:number,per_page:100});
             const approved = comments.some(c => c.user.login === 'Bhav3shChawla' && c.body.trim() === '/approve ' + pr.head.sha);
-            await github.rest.repos.createCommitStatus({...context.repo,sha:pr.head.sha,context:'maintainer-approval',state:approved?'success':'pending',description:approved?'Maintainer approved this exact commit':'Awaiting owner /approve HEAD_SHA comment',target_url:pr.html_url});
+            await github.rest.repos.createCommitStatus({...context.repo,sha:pr.head.sha,context:'maintainer-approval',state:approved?'success':'pending',description:approved?'Maintainer approved this exact commit':'Awaiting maintainer /amp on a green revision',target_url:pr.html_url});

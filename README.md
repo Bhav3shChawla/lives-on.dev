@@ -12,6 +12,8 @@ Approved public DNS definitions live in `registry/domains/`. DNS destinations an
 
 Changes require validation and maintainer review. A pending request is not proof of active DNS. See [SERVICE_POLICY.md](SERVICE_POLICY.md).
 
+For a green, mergeable domain-record request, the maintainer comments `/amp` to approve, merge, and publish that name. The automation reports the result on the PR. Changed or invalid requests stop safely. Code, workflow, and policy changes require separate manual review.
+
 Report abuse, security issues, privacy requests, or name disputes to reports@lives-on.dev. Include the affected address and relevant evidence, never credentials.
 
 [Website](https://lives-on.dev) · [Maintainer](https://github.com/Bhav3shChawla)
