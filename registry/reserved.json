@@ -1,6 +1,8 @@
 {
   "version": 1,
   "names": {
+    "reports": { "category": "system", "reason": "reporting contact", "allowDomainFile": false },
+    "_domainkey": { "category": "system", "reason": "mail authentication", "allowDomainFile": false },
     "admin": {
       "category": "system",
       "reason": "service administration",

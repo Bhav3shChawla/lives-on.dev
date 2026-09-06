@@ -1,6 +1,6 @@
-# lives-on.dev service policy — draft
+# lives-on.dev service policy
 
-This draft defines the initial operating rules. It is not a substitute for final legal Terms of Service or a Privacy Policy.
+These are the initial beta operating rules. Availability is not guaranteed. See https://lives-on.dev/privacy for the privacy notice.
 
 ## Eligibility
 
@@ -24,3 +24,9 @@ Subdomains may not be used for phishing, malware, spam, credential collection, i
 ## Owner responsibility
 
 Owners remain responsible for their hosting, content, accounts, certificates, and keeping destination records current. The service provides the address but does not host the website.
+
+## Reporting and appeals
+
+Email reports@lives-on.dev with the affected address and relevant evidence. Do not send credentials or sensitive personal information. Owners can request review or restoration with proof of ownership and remediation. A maintainer reviews restoration before publication. Urgent threats may be suspended before notice. There is no automatic inactivity reclamation or guaranteed response deadline.
+
+The parent domain is not listed in the Public Suffix List. Sites must not set parent-domain cookies or attempt to interfere with other users. Authentication applications should use secure host-only cookies and exact-origin request checks. These operating rules do not provide browser-enforced PSL isolation.
