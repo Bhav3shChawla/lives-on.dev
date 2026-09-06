@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "names": {
+    "admin": {
+      "category": "system",
+      "reason": "service administration",
+      "allowDomainFile": false
+    },
+    "api": {
+      "category": "system",
+      "reason": "service API",
+      "allowDomainFile": false
+    },
+    "abuse": {
+      "category": "system",
+      "reason": "abuse response",
+      "allowDomainFile": false
+    },
+    "docs": {
+      "category": "system",
+      "reason": "service documentation",
+      "allowDomainFile": false
+    },
+    "mail": {
+      "category": "system",
+      "reason": "service email",
+      "allowDomainFile": false
+    },
+    "status": {
+      "category": "system",
+      "reason": "service status",
+      "allowDomainFile": false
+    },
+    "support": {
+      "category": "system",
+      "reason": "service support",
+      "allowDomainFile": false
+    },
+    "www": {
+      "category": "system",
+      "reason": "root website",
+      "allowDomainFile": false
+    },
+    "bhavesh": {
+      "category": "founder",
+      "reason": "founder address #0001",
+      "allowDomainFile": true,
+      "status": "reserved"
+    }
+  }
+}

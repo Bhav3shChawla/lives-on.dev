@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lives-on.dev/registry.schema.json",
+  "title": "lives-on.dev domain request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["owner", "records"],
+  "properties": {
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["username"],
+      "properties": {
+        "username": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$"
+        },
+        "email": { "type": "string", "format": "email" }
+      }
+    },
+    "records": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "A": { "$ref": "#/$defs/stringOrStrings" },
+        "AAAA": { "$ref": "#/$defs/stringOrStrings" },
+        "CNAME": { "type": "string" },
+        "TXT": { "$ref": "#/$defs/stringOrStrings" },
+        "MX": { "type": "array", "minItems": 1 },
+        "CAA": { "type": "array", "minItems": 1 },
+        "NS": { "$ref": "#/$defs/stringOrStrings" },
+        "SRV": { "type": "array", "minItems": 1 },
+        "TLSA": { "type": "array", "minItems": 1 },
+        "DS": { "type": "array", "minItems": 1 },
+        "URL": { "type": "string", "format": "uri" }
+      }
+    },
+    "proxied": { "type": "boolean" },
+    "redirect_config": { "type": "object" }
+  },
+  "$defs": {
+    "stringOrStrings": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      ]
+    }
+  }
+}
