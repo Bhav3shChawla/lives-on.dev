@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">Your next idea lives here — lives-on.dev</title>
+  <desc id="desc">A free subdomain registry. yourname.lives-on.dev. Your hosting stays with you.</desc>
+  <rect width="1200" height="560" fill="#050505"/>
+  <path d="M48 48h32M48 48v32M1152 48h-32M1152 48v32M48 512h32M48 512v-32M1152 512h-32M1152 512v-32" fill="none" stroke="#ff1a1a" stroke-width="2"/>
+  <g font-family="monospace">
+    <text x="100" y="180" fill="#aaa" font-size="16" letter-spacing="4">A FREE SUBDOMAIN REGISTRY</text>
+    <text x="100" y="282" font-size="62" font-weight="700"><tspan fill="#fff">[yourname]</tspan><tspan fill="#ff1a1a">.lives-on.dev</tspan></text>
+    <path d="M138 306h298" stroke="#ff1a1a" stroke-width="3"/>
+    <text x="100" y="362" fill="#fff" font-size="23">Your next idea lives here.</text>
+    <text x="100" y="403" fill="#aaa" font-size="16">No charge for the name. Your hosting stays with you.</text>
+  </g>
+</svg>
