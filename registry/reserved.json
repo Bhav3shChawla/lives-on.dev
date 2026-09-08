@@ -81,6 +81,16 @@
       "reason": "founder address #0001",
       "allowDomainFile": true,
       "status": "reserved"
+    },
+    "goofy": {
+      "category": "private",
+      "reason": "reserved for future assignment",
+      "allowDomainFile": false
+    },
+    "vincenzo": {
+      "category": "private",
+      "reason": "reserved for future assignment",
+      "allowDomainFile": false
     }
   }
 }
