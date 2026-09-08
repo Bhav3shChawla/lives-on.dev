@@ -1,11 +1,12 @@
 import {readFile} from 'node:fs/promises';
 const repo='Bhav3shChawla/lives-on.dev', owner=282984756;
 const event=JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH,'utf8'));
-const command=event.comment?.body?.trim();
+const rawCommand=event.comment?.body?.trim();
+const command=rawCommand==='rejected'?'/rejected':rawCommand;
 if(event.repository?.full_name!==repo||event.action!=='created'||event.sender?.id!==owner||event.comment?.user?.id!==owner||!['/amp','/rejected'].includes(command))throw Error('Unauthorized command.');
 async function api(path,method='GET',body){const r=await fetch('https://api.github.com/repos/'+repo+path,{method,headers:{Authorization:'Bearer '+process.env.GH_TOKEN,Accept:'application/vnd.github+json','Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});if(!r.ok)throw Error('GitHub request failed: '+r.status);return r.status===204?null:r.json();}
 const comment=await api('/issues/comments/'+event.comment.id);
-if(comment.user.id!==owner||comment.body.trim()!==command||comment.created_at!==comment.updated_at||comment.created_at!==event.comment.created_at)throw Error('Edited or changed command.');
+if(comment.user.id!==owner||comment.body.trim()!==rawCommand||comment.created_at!==comment.updated_at||comment.created_at!==event.comment.created_at)throw Error('Edited or changed command.');
 const number=event.issue.number;
 if(event.issue.pull_request){
   if(command!=='/rejected')throw Error('PR approval belongs to the protected publication job.');
