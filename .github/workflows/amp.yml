@@ -38,7 +38,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - name: Plan only this name
         run: |
-          export DNS_ALLOWED_NAME="$(node scripts/amp.mjs scope)"
+          export DNS_ALLOWED_NAMES="$(node scripts/amp.mjs scope)"
           node scripts/dns-sync.mjs plan dns-plan.json
         env:
           CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
@@ -46,7 +46,7 @@ jobs:
       - name: Recheck approval and publish
         run: |
           node scripts/amp.mjs recheck
-          export DNS_ALLOWED_NAME="$(node scripts/amp.mjs scope)"
+          export DNS_ALLOWED_NAMES="$(node scripts/amp.mjs scope)"
           DIGEST=$(node -e "const fs=require('fs'),crypto=require('crypto');process.stdout.write(crypto.createHash('sha256').update(JSON.stringify(JSON.parse(fs.readFileSync('dns-plan.json','utf8')))).digest('hex'))")
           node scripts/dns-sync.mjs apply dns-plan.json "$DIGEST"
         env:
@@ -68,3 +68,25 @@ jobs:
             dns-plan.json
             dns-backups/
           if-no-files-found: ignore
+  review-command:
+    if: >-
+      github.repository == 'Bhav3shChawla/lives-on.dev' &&
+      github.event.sender.id == 282984756 &&
+      github.event.comment.user.id == 282984756 &&
+      (github.event.comment.body == '/rejected' || (!github.event.issue.pull_request && github.event.comment.body == '/amp'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/review-command.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}

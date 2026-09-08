@@ -25,7 +25,7 @@ function fixture() {
 }
 test('owner command accepts a green exact domain revision', () => {
   const f = fixture(); assertCommand(f.event, f.comment);
-  assert.equal(assertRequest(f.pr, f.files, f.checks, f.comment), 'example');
+  assert.deepEqual(assertRequest(f.pr, f.files, f.checks, f.comment), ['example']);
 });
 test('other accounts and modified or replayed commands cannot approve', () => {
   for (const mutate of [
@@ -50,8 +50,8 @@ test('PR changes, newer checks, foreign checks and failures stop approval', () =
     f => f.pr.draft = true,
   ]) { const f = fixture(); mutate(f); assert.throws(() => assertRequest(f.pr, f.files, f.checks, f.comment)); }
 });
-test('code, workflows, traversal, renames and multi-record requests fail closed', () => {
-  for (const filename of ['.github/workflows/dns.yml', 'scripts/dns-sync.mjs', 'registry/domains/../../x.json', 'registry/domains/sub.example.json', 'registry/reserved.json']) {
+test('code, workflows, traversal, duplicate files and malformed renames fail closed', () => {
+  for (const filename of ['.github/workflows/dns.yml', 'scripts/dns-sync.mjs', 'registry/domains/../../x.json', 'registry/reserved.json']) {
     const f = fixture(); f.files[0].filename = filename; assert.throws(() => assertRequest(f.pr, f.files, f.checks, f.comment));
   }
   const f = fixture(); f.files.push({ ...f.files[0] }); assert.throws(() => assertRequest(f.pr, f.files, f.checks, f.comment));
@@ -67,3 +67,7 @@ test('DNS scope preserves unrelated managed and unmanaged records', () => {
   for (const name of ['lives-on.dev', '*.lives-on.dev', 'example.evil.dev', '../example.lives-on.dev'])
     assert.throws(() => selectDnsScope([], [], name));
 });
+test('nested records and swaps produce only their exact DNS scope',()=>{const f=fixture();f.files=[{filename:'registry/domains/newname.json',previous_filename:'registry/domains/example.json',status:'renamed'},{filename:'registry/domains/_verify.newname.json',status:'added'}];assert.deepEqual(assertRequest(f.pr,f.files,f.checks,f.comment),['newname','example','_verify.newname']);const own={name:'_verify.newname.lives-on.dev',comment:'lives-on.dev:registry'},other={name:'bhavesh.lives-on.dev',comment:'lives-on.dev:registry'};assert.deepEqual(selectDnsScope([own,other],[own,other],[own.name]).managed,[own]);});
+
+
+import './review-command.test.mjs';

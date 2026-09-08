@@ -2,7 +2,7 @@ import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { validateDefinition } from '../lib/validate-record.mjs';
 import { selectDnsScope } from '../lib/amp-policy.mjs';
-const scope = process.env.DNS_ALLOWED_NAME || null;
+const scope = process.env.DNS_ALLOWED_NAMES ? JSON.parse(process.env.DNS_ALLOWED_NAMES) : process.env.DNS_ALLOWED_NAME || null;
 const zone = process.env.CLOUDFLARE_ZONE_ID;
 const token = process.env.CLOUDFLARE_DNS_TOKEN;
 const marker = 'lives-on.dev:registry';
@@ -173,7 +173,7 @@ if (mode === 'plan') {
   );
 } else if (mode === 'apply') {
   const plan = JSON.parse(await readFile(filename, 'utf8'));
-  if ((plan.scope || null) !== scope) throw new Error('DNS plan scope mismatch.');
+  if (JSON.stringify(plan.scope || null) !== JSON.stringify(scope)) throw new Error('DNS plan scope mismatch.');
   if (
     plan.zoneId !== zone ||
     plan.zone !== 'lives-on.dev' ||
@@ -194,7 +194,7 @@ if (mode === 'plan') {
   if (
     plan.changes.deletes.some((r) => !managedIds.has(r.id)) ||
     plan.changes.posts.some(
-      (r) => r.comment !== marker || !r.name.endsWith('.lives-on.dev') || r.name.includes('*') || (scope && r.name !== scope),
+      (r) => r.comment !== marker || !r.name.endsWith('.lives-on.dev') || r.name.includes('*') || (scope && !(Array.isArray(scope) ? scope : [scope]).includes(r.name)),
     )
   )
     throw new Error('Unsafe plan scope.');
@@ -208,7 +208,7 @@ if (mode === 'plan') {
   console.log('Approved DNS batch applied; backup saved.');
 } else if (mode === 'rollback-plan') {
   const backup = JSON.parse(await readFile(filename, 'utf8'));
-  if ((backup.scope || null) !== scope) throw new Error('Backup scope mismatch.');
+  if (JSON.stringify(backup.scope || null) !== JSON.stringify(scope)) throw new Error('Backup scope mismatch.');
   if (backup.zoneId !== zone) throw new Error('Wrong backup zone.');
   const live = await current(),
     changes = planChanges(live, backup.records);
