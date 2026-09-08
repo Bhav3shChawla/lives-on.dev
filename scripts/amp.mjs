@@ -35,25 +35,23 @@ if (mode === 'prepare') {
   const files = await api(prefix + '/pulls/' + number + '/files?per_page=100');
   if (pr.changed_files !== files.length) throw new Error('Too many changed files.');
   const checks = await api(prefix + '/commits/' + pr.head.sha + '/check-runs?per_page=100');
-  const name = assertRequest(pr, files, checks.check_runs, comment);
-  const file = files[0];
-  const state = { number, name, filename: file.filename, head: pr.head.sha, blob: file.status === 'removed' ? null : file.sha, merged: Boolean(pr.merged) };
+  const names = assertRequest(pr, files, checks.check_runs, comment);
+  const records=files.flatMap(file=>[...(file.status==='renamed'?[{filename:file.previous_filename,blob:null}]:[]),{filename:file.filename,blob:file.status==='removed'?null:file.sha}]);
+  const state = { number, name:names.join(', '), names, files:records, head:pr.head.sha, merged:Boolean(pr.merged) };
   await writeFile('amp-state.json', JSON.stringify(state));
   const main = await api(prefix + '/git/ref/heads/main');
   if (main.object.sha !== process.env.GITHUB_SHA) throw new Error('Main changed while this approval waited. Post a fresh /amp.');
-  if (pr.merged && await fileAt(main.object.sha, file.filename) !== state.blob)
-    throw new Error('The record changed since this PR merged; do not republish an older version.');
-  if (state.blob) {
-    const headRepo = pr.head.repo?.full_name || repo;
-    if (!/^[\w.-]+\/[\w.-]+$/.test(headRepo)) throw new Error('Invalid source repository.');
-    const blob = await api(`/repos/${headRepo}/git/blobs/${state.blob}`);
-    if (blob.encoding !== 'base64' || blob.size > 16384) throw new Error('Invalid record size or encoding.');
-    const data = JSON.parse(Buffer.from(blob.content, 'base64').toString('utf8'));
-    validateDefinition(name, data, JSON.parse(await readFile('registry/reserved.json', 'utf8')));
-    // PR data is parsed JSON only. No PR code or scripts are checked out or executed.
-    await writeFile(file.filename, JSON.stringify(data, null, 2) + '\n');
-  } else {
-    await unlink(file.filename).catch(e => { if (e.code !== 'ENOENT') throw e; });
+  for(const file of state.files){
+    if(pr.merged && await fileAt(main.object.sha,file.filename)!==file.blob)throw Error('An approved record is no longer current.');
+    if(file.blob){
+      const headRepo=pr.head.repo?.full_name||repo;
+      if(!/^[\w.-]+\/[\w.-]+$/.test(headRepo))throw Error('Invalid source repository.');
+      const blob=await api(`/repos/${headRepo}/git/blobs/${file.blob}`);
+      if(blob.encoding!=='base64'||blob.size>16384)throw Error('Invalid record blob.');
+      const data=JSON.parse(Buffer.from(blob.content,'base64').toString('utf8'));
+      validateDefinition(file.filename.slice('registry/domains/'.length,-5),data,JSON.parse(await readFile('registry/reserved.json','utf8')));
+      await writeFile(file.filename,JSON.stringify(data,null,2)+'\n');
+    }else await unlink(file.filename).catch(e=>{if(e.code!=='ENOENT')throw e;});
   }
   execFileSync(process.execPath, ['scripts/validate-registry.mjs'], { stdio: 'inherit' });
   await commentNow();
@@ -67,17 +65,17 @@ if (mode === 'prepare') {
     state.merge = merged.sha;
     await writeFile('amp-state.json', JSON.stringify(state));
   }
-  console.log('Approved and merged request for ' + name + '.lives-on.dev');
+  console.log('Approved and merged request for ' + state.name);
 } else if (mode === 'scope') {
   const state = JSON.parse(await readFile('amp-state.json', 'utf8'));
-  process.stdout.write(state.name + '.lives-on.dev');
+  process.stdout.write(JSON.stringify(state.names.map(name=>name+'.lives-on.dev')));
 } else if (mode === 'recheck') {
   await commentNow();
   const state = JSON.parse(await readFile('amp-state.json', 'utf8'));
   const pr = await api(prefix + '/pulls/' + number);
   const main = await api(prefix + '/git/ref/heads/main');
-  if (!pr.merged || pr.head.sha !== state.head || await fileAt(main.object.sha, state.filename) !== state.blob)
-    throw new Error('The approved record is no longer current. DNS publication stopped.');
+  if (!pr.merged || pr.head.sha !== state.head) throw Error('The approved request changed.');
+  for(const file of state.files)if(await fileAt(main.object.sha,file.filename)!==file.blob)throw Error('An approved record is no longer current. DNS publication stopped.');
 } else if (mode === 'report') {
   let state;
   try { state = JSON.parse(await readFile('amp-state.json', 'utf8')); } catch { state = {}; }
