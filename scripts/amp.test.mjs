@@ -69,3 +69,5 @@ test('DNS scope preserves unrelated managed and unmanaged records', () => {
 });
 test('nested records and swaps produce only their exact DNS scope',()=>{const f=fixture();f.files=[{filename:'registry/domains/newname.json',previous_filename:'registry/domains/example.json',status:'renamed'},{filename:'registry/domains/_verify.newname.json',status:'added'}];assert.deepEqual(assertRequest(f.pr,f.files,f.checks,f.comment),['newname','example','_verify.newname']);const own={name:'_verify.newname.lives-on.dev',comment:'lives-on.dev:registry'},other={name:'bhavesh.lives-on.dev',comment:'lives-on.dev:registry'};assert.deepEqual(selectDnsScope([own,other],[own,other],[own.name]).managed,[own]);});
 
+
+import './review-command.test.mjs';
