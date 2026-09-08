@@ -73,7 +73,7 @@ jobs:
       github.repository == 'Bhav3shChawla/lives-on.dev' &&
       github.event.sender.id == 282984756 &&
       github.event.comment.user.id == 282984756 &&
-      (github.event.comment.body == '/rejected' || (!github.event.issue.pull_request && github.event.comment.body == '/amp'))
+      (github.event.comment.body == '/rejected' || github.event.comment.body == 'rejected' || (!github.event.issue.pull_request && github.event.comment.body == '/amp'))
     runs-on: ubuntu-latest
     permissions:
       contents: write
