@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://lives-on.dev"><img src="assets/readme-banner.svg" alt="Your next idea lives here. Claim yourname.lives-on.dev — a free subdomain for your project." width="100%" /></a>
+  <a href="https://lives-on.dev"><img src="assets/readme-banner.png" alt="Your next idea lives here. Claim yourname.lives-on.dev — a free subdomain for your project." width="100%" /></a>
 </p>
 
 <h1 align="center">lives-on.dev</h1>
