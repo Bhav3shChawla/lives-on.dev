@@ -156,6 +156,10 @@ if (mode === 'prepare') {
       throw new Error('A submitted name is already registered.');
   assertNewNamePlan(JSON.parse(await readFile('dns-plan.json', 'utf8')), state.names);
   await api(prefix + '/statuses/' + state.head, 'POST', {
+    state: 'success', context: 'registry-validation',
+    description: 'Registry and DNS plan validated for publication', target_url: runUrl,
+  });
+  await api(prefix + '/statuses/' + state.head, 'POST', {
     state: 'success', context: 'maintainer-approval',
     description: 'Available name and record validated for publication', target_url: runUrl,
   });

@@ -8,6 +8,7 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
+  checks: read
   statuses: write
 jobs:
   review:
@@ -20,6 +21,21 @@ jobs:
             const number = context.payload.pull_request?.number ?? context.issue.number;
             const {data: pr} = await github.rest.pulls.get({...context.repo,pull_number:number});
             if (pr.state !== 'open') return;
+            if (context.payload.pull_request && context.payload.pull_request.head.sha !== pr.head.sha) return;
+            let validation;
+            for (let attempt = 0; attempt < 36; attempt++) {
+              const {data} = await github.rest.checks.listForRef({...context.repo,ref:pr.head.sha,check_name:'validate',per_page:100});
+              validation = data.check_runs
+                .filter(check => check.name === 'validate' && check.app?.id === 15368 && check.head_sha === pr.head.sha)
+                .sort((a,b) => b.id - a.id)[0];
+              if (validation?.status === 'completed') break;
+              await new Promise(resolve => setTimeout(resolve,5000));
+            }
+            const {data: current} = await github.rest.pulls.get({...context.repo,pull_number:number});
+            if (current.state !== 'open' || current.head.sha !== pr.head.sha) return;
+            const validationState = validation?.conclusion === 'success'
+              ? 'success' : validation?.status === 'completed' ? 'failure' : 'pending';
+            await github.rest.repos.createCommitStatus({...context.repo,sha:pr.head.sha,context:'registry-validation',state:validationState,description:validationState === 'success' ? 'Registry validation passed' : 'Registry validation has not passed',target_url:validation?.html_url || pr.html_url});
             const comments = await github.paginate(github.rest.issues.listComments,{...context.repo,issue_number:number,per_page:100});
             const approved = comments.some(c => c.user.login === 'Bhav3shChawla' && c.body.trim() === '/approve ' + pr.head.sha);
             await github.rest.repos.createCommitStatus({...context.repo,sha:pr.head.sha,context:'maintainer-approval',state:approved?'success':'pending',description:approved?'Maintainer approved this exact commit':'Awaiting maintainer /amp on a green revision',target_url:pr.html_url});

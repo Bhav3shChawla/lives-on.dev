@@ -58,6 +58,7 @@ if (mode === 'prepare') {
   const fresh = await api(prefix + '/pulls/' + number);
   if (fresh.head.sha !== state.head || fresh.base.ref !== 'main') throw new Error('PR revision changed. Post a fresh /amp.');
   if (!pr.merged) {
+    await api(prefix + '/statuses/' + state.head, 'POST', { state: 'success', context: 'registry-validation', description: 'Validated request and DNS scope', target_url: run });
     await api(prefix + '/statuses/' + state.head, 'POST', { state: 'success', context: 'maintainer-approval', description: 'Owner /amp approval for this exact validated revision', target_url: run });
     const merged = await api(prefix + '/pulls/' + number + '/merge', 'PUT', { sha: state.head, merge_method: 'squash' });
     if (!merged.merged) throw new Error('Merge blocked by required checks or branch protection.');
