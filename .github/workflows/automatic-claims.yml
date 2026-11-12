@@ -1,0 +1,78 @@
+name: Publish available names
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+permissions: {}
+concurrency:
+  group: dns-publication
+  cancel-in-progress: false
+  queue: max
+jobs:
+  publish:
+    if: >-
+      github.repository == 'Bhav3shChawla/lives-on.dev' &&
+      github.event.pull_request.head.repo.full_name == 'Bhav3shChawla/lives-on.dev' &&
+      startsWith(github.event.pull_request.head.ref, 'requests/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: dns-production
+    permissions:
+      actions: write
+      checks: read
+      contents: write
+      issues: write
+      pull-requests: write
+      statuses: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check the claim and its validation
+        id: claim
+        run: node scripts/automatic-claim.mjs prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Plan DNS for this name
+        if: steps.claim.outputs.eligible == 'true'
+        run: |
+          export DNS_ALLOWED_NAMES="$(node scripts/automatic-claim.mjs scope)"
+          node scripts/dns-sync.mjs plan dns-plan.json
+          node scripts/automatic-claim.mjs verify-plan
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_DNS_TOKEN: ${{ secrets.CLOUDFLARE_DNS_READ_TOKEN }}
+      - name: Merge the validated claim
+        if: steps.claim.outputs.eligible == 'true'
+        run: node scripts/automatic-claim.mjs merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Publish its DNS record
+        if: steps.claim.outputs.eligible == 'true'
+        run: |
+          node scripts/automatic-claim.mjs recheck
+          export DNS_ALLOWED_NAMES="$(node scripts/automatic-claim.mjs scope)"
+          DIGEST=$(node -e "const fs=require('fs'),crypto=require('crypto');process.stdout.write(crypto.createHash('sha256').update(JSON.stringify(JSON.parse(fs.readFileSync('dns-plan.json','utf8')))).digest('hex'))")
+          node scripts/dns-sync.mjs apply dns-plan.json "$DIGEST"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_DNS_TOKEN: ${{ secrets.CLOUDFLARE_DNS_TOKEN }}
+      - name: Report the result
+        if: always() && steps.claim.outputs.eligible == 'true'
+        run: node scripts/automatic-claim.mjs report
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUTO_RESULT: ${{ job.status }}
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.claim.outputs.eligible == 'true'
+        with:
+          name: claim-dns-evidence
+          path: |
+            automatic-claim-state.json
+            dns-plan.json
+            dns-backups/
+          if-no-files-found: ignore

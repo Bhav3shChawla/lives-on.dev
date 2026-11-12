@@ -1,6 +1,7 @@
 name: Registry validation
 on:
   pull_request:
+  workflow_dispatch:
   push:
     branches: [main]
 permissions:
@@ -28,3 +29,7 @@ jobs:
         working-directory: trusted
       - run: if [ -f scripts/amp.test.mjs ]; then node --test scripts/amp.test.mjs; fi
         working-directory: trusted
+      - run: if [ -f scripts/automatic-claim.test.mjs ]; then node --test scripts/automatic-claim.test.mjs; fi
+        working-directory: trusted
+      - run: if [ -f scripts/automatic-claim.test.mjs ]; then node --test scripts/automatic-claim.test.mjs; fi
+        working-directory: candidate
