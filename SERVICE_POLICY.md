@@ -15,7 +15,8 @@ Subdomains may not be used for phishing, malware, spam, credential collection, i
 
 ## Review and removal
 
-- Every new registration and material DNS change requires human review.
+- First-time registrations for available names with valid ownership and DNS records may publish automatically. Changes to an existing name, name swaps, and other requests require maintainer review.
+- Automatic approval checks the submitted record and name; it does not certify the destination site's content or compliance with this policy.
 - Requests may be declined when ownership, purpose, destination, or safety cannot be verified.
 - A dangerous record may be disabled immediately to protect users and the root domain.
 - When it is safe to do so, the owner should receive notice and a chance to correct the issue.

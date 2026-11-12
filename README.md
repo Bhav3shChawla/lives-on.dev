@@ -28,9 +28,9 @@
 
 lives-on.dev is a subdomain registry, not a hosting provider or a top-level domain. We provide the address; your provider runs your website.
 
-This repository contains the approved public records in [`registry/domains/`](registry/domains/). Pending claims and drafts are stored by the website until reviewed. A saved claim is not an active DNS record.
+This repository contains the published public records in [`registry/domains/`](registry/domains/). Pending claims and drafts are stored by the website until submitted. A saved claim is not an active DNS record.
 
-**Public beta:** requests are manually reviewed before DNS publication. Check the website for current registration availability. The name is free; your hosting provider may charge for its services. Availability and permanent service are not guaranteed.
+**Public beta:** eligible first-time requests for available names are validated and published automatically. Changes to existing names and name swaps still require review. Check the website for current registration availability. The name is free; your hosting provider may charge for its services. Availability and permanent service are not guaranteed.
 
 ## Why lives-on.dev?
 
@@ -49,8 +49,8 @@ This is deliberately a subdomain service. You receive permission to use an addre
 2. Sign in with GitHub to save an available name. One claim per GitHub account.
 3. Add the full address to your hosting provider's custom-domain settings.
 4. Open [Configure your DNS records](https://lives-on.dev/record/edit) and enter the exact records your host supplies.
-5. **Save record**, then **Submit saved record for review**. Follow the linked GitHub request.
-6. After approval and successful DNS publication, finish verification and HTTPS setup at your host.
+5. **Save record**, then submit the saved record. Follow the linked GitHub request while the name and records are checked.
+6. After successful DNS publication, finish verification and HTTPS setup at your host.
 
 Copying or downloading JSON does not submit or publish it. Do not treat a pending claim, merged request, or working default hosting URL as proof that the custom address is ready.
 
@@ -60,12 +60,12 @@ Copying or downloading JSON does not submit or publish it. Do not treat a pendin
 | --- | --- | --- |
 | Available | The name is available at the time of the check; it is not reserved for you yet. | Sign in to claim it. Availability is checked again when saving. |
 | Claim saved | Your account has a claim, not a live website address. | Configure the host and destination. |
-| Records saved | Your draft is stored in your account. | Submit the saved revision for review. |
-| In review | A request exists on GitHub. | Follow feedback and correct any validation problems. |
+| Records saved | Your draft is stored in your account. | Submit the saved revision. |
+| Request running | A request exists on GitHub. | First-time available names publish after validation; other requests wait for review. |
 | DNS published | Approved records have been applied. | Let DNS caches update and finish provider verification. |
 | HTTPS ready | Your host serves the right site with a valid certificate. | Test pages, assets, and any redirects. |
 
-There is no promised instant-activation deadline. Review, DNS propagation, ownership verification, and certificate provisioning are different stages.
+There is no promised instant-activation deadline. Validation, DNS propagation, ownership verification, and certificate provisioning are different stages.
 
 ## Point it at your own hosting
 
