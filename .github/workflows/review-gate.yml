@@ -38,4 +38,6 @@ jobs:
             await github.rest.repos.createCommitStatus({...context.repo,sha:pr.head.sha,context:'registry-validation',state:validationState,description:validationState === 'success' ? 'Registry validation passed' : 'Registry validation has not passed',target_url:validation?.html_url || pr.html_url});
             const comments = await github.paginate(github.rest.issues.listComments,{...context.repo,issue_number:number,per_page:100});
             const approved = comments.some(c => c.user.login === 'Bhav3shChawla' && c.body.trim() === '/approve ' + pr.head.sha);
-            await github.rest.repos.createCommitStatus({...context.repo,sha:pr.head.sha,context:'maintainer-approval',state:approved?'success':'pending',description:approved?'Maintainer approved this exact commit':'Awaiting maintainer /amp on a green revision',target_url:pr.html_url});
+            const automaticSubmission = /^requests\/[0-9]+\/[a-z0-9-]+\/r[0-9]+-submit-[0-9]+$/.test(pr.head.ref);
+            if (approved || !automaticSubmission)
+              await github.rest.repos.createCommitStatus({...context.repo,sha:pr.head.sha,context:'maintainer-approval',state:approved?'success':'pending',description:approved?'Maintainer approved this exact commit':'Awaiting maintainer /amp on a green revision',target_url:pr.html_url});
