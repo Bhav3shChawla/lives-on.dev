@@ -33,3 +33,5 @@ jobs:
         working-directory: trusted
       - run: if [ -f scripts/automatic-claim.test.mjs ]; then node --test scripts/automatic-claim.test.mjs; fi
         working-directory: candidate
+      - run: if [ -f scripts/review-gate.test.mjs ]; then node --test scripts/review-gate.test.mjs; fi
+        working-directory: candidate
