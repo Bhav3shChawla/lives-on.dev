@@ -4,7 +4,9 @@
     "id": 328411932
   },
   "records": {
-    "CNAME": "vibeconnect-salf.onrender.com"
+    "TXT": [
+      "google-site-verification=TflofWT0s9g3RxmXWr-a2KCI7pDc0qnAR99UVIAezSc"
+    ]
   },
   "proxied": false
 }
