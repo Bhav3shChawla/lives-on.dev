@@ -96,7 +96,11 @@ if (mode === 'prepare') {
   }
   const branchName = /^requests\/[0-9]+\/([a-z0-9-]+)\//.exec(pr.head.ref)?.[1];
   const root = definitions['registry/domains/' + branchName + '.json'];
-  if (!root) throw new Error('The submitted parent record is missing.');
+  if (!root) {
+    await appendFile(process.env.GITHUB_OUTPUT, 'eligible=false\n');
+    console.log('Nested records for an existing name remain in review.');
+    process.exit(0);
+  }
   const account = await api('/users/' + encodeURIComponent(root.owner?.username || ''));
   const reserved = JSON.parse(await readFile('registry/reserved.json', 'utf8'));
   let claim = claimFromRequest(pr, files, definitions, reserved, account);
